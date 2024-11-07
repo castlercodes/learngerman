@@ -71,6 +71,9 @@ function MCQ() {
 
     const storedResults = JSON.parse(localStorage.getItem('mcqResults')) || {};
     setResults(storedResults);
+
+    const storedScore = JSON.parse(localStorage.getItem('totalscore')) || 0;
+    setScore(storedScore);
   };
 
   const resetCounts = () => {
@@ -111,7 +114,9 @@ function MCQ() {
       return updatedResults;
     });
     if (isCorrect) {
-      setScore((prev) => prev + questionWeights[key]);
+      const newScore = score + questionWeights[key];
+      setScore(newScore); // Update the state with the new score
+      localStorage.setItem('totalscore', JSON.stringify(newScore)); 
       updateCorrectCount(key, 1);
     } else {
       updateCorrectCount(key, -1);
