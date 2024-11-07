@@ -17,8 +17,8 @@ function MCQ() {
   const [markedQuestions, setMarkedQuestions] = useState(new Set());
 
   useEffect(() => {
-    loadStateFromStorage();
     initializeQuestions();
+    loadStateFromStorage();
   }, []);
 
   const initializeQuestions = () => {
