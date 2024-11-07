@@ -18,12 +18,22 @@ function MCQ() {
 
   useEffect(() => {
     initializeQuestions();
+    loadStateFromStorage();
   }, []);
 
   const initializeQuestions = () => {
-    const uniqueVocab = vocab.filter((v, index, self) =>
+    let uniqueVocab = vocab.filter((v, index, self) =>
       index === self.findIndex((t) => t.english === v.english && t.german === v.german)
     );
+
+    // Check if the shuffled question order exists in localStorage
+    const storedQuestions = JSON.parse(localStorage.getItem('mcqQuestionOrder'));
+    if (storedQuestions) {
+      uniqueVocab = storedQuestions;
+    } else {
+      uniqueVocab = shuffleArray(uniqueVocab);
+      localStorage.setItem('mcqQuestionOrder', JSON.stringify(uniqueVocab));
+    }
 
     const storedCorrectCounts = JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
 
@@ -33,7 +43,7 @@ function MCQ() {
       return markedQuestions.has(key) || !(storedCorrectCounts[key] && storedCorrectCounts[key] >= 2);
     });
 
-    const preparedQuestions = shuffleArray(filteredVocab).map((q) => {
+    const preparedQuestions = filteredVocab.map((q) => {
       let options = [q.german];
       const shuffledVocab = shuffleArray(uniqueVocab.filter(v => v.german !== q.german));
       for (let i = 0; i < Math.min(4, shuffledVocab.length); i++) {
@@ -45,9 +55,7 @@ function MCQ() {
 
     setAllQuestions(preparedQuestions);
     setActiveQuestions(preparedQuestions);
-    setResults({});
-    setScore(0);
-    setPerformanceLevel('');
+    setScore(calculateScoreFromResults(results, preparedQuestions));
 
     const initialWeight = preparedQuestions.length > 0 ? TOTAL_SCORE / preparedQuestions.length : 0;
     const weights = {};
@@ -56,6 +64,30 @@ function MCQ() {
       weights[key] = initialWeight;
     });
     setQuestionWeights(weights);
+  };
+
+  const loadStateFromStorage = () => {
+    const storedMarkedQuestions = JSON.parse(localStorage.getItem('mcqMarkedQuestions')) || [];
+    setMarkedQuestions(new Set(storedMarkedQuestions));
+
+    const storedResults = JSON.parse(localStorage.getItem('mcqResults')) || {};
+    setResults(storedResults);
+  };
+
+  const calculateScoreFromResults = (storedResults, questions) => {
+    let totalScore = 0;
+    questions.forEach((q) => {
+      const key = `${q.english}-${q.german}`;
+      if (storedResults[key] === true) {
+        totalScore += questionWeights[key] || 0;
+      }
+    });
+    return totalScore;
+  };
+
+  const saveStateToStorage = () => {
+    localStorage.setItem('mcqMarkedQuestions', JSON.stringify([...markedQuestions]));
+    localStorage.setItem('mcqResults', JSON.stringify(results));
   };
 
   const resetCounts = () => {
@@ -71,6 +103,7 @@ function MCQ() {
       } else {
         updatedMarked.add(key);
       }
+      localStorage.setItem('mcqMarkedQuestions', JSON.stringify([...updatedMarked])); // Save immediately
       return updatedMarked;
     });
   };
@@ -81,7 +114,11 @@ function MCQ() {
     if (results.hasOwnProperty(key)) return;
 
     const isCorrect = selectedOption === question.german;
-    setResults((prev) => ({ ...prev, [key]: isCorrect }));
+    setResults((prev) => {
+      const updatedResults = { ...prev, [key]: isCorrect };
+      localStorage.setItem('mcqResults', JSON.stringify(updatedResults)); // Save immediately
+      return updatedResults;
+    });
     if (isCorrect) {
       setScore((prev) => prev + questionWeights[key]);
       updateCorrectCount(key, 1);
@@ -152,7 +189,6 @@ function MCQ() {
   return (
     <div className="mcq-container">
       <button onClick={resetCounts} className="reset-counts-button">Reset All Counts</button>
-      <button onClick={handleReset} className="reset-button">Reset Questions</button>
       <div className={`fixed-score ${performanceLevel}`}>Current Score: {score.toFixed(2)} / {TOTAL_SCORE}</div>
       
       <div className="questions-list">
@@ -166,45 +202,45 @@ function MCQ() {
           activeQuestions.map((q, index) => {
             const key = `${q.english}-${q.german}`;
             return (
-                <div key={key} className="question-card">
+              <div key={key} className="question-card">
                 <div className="question-text">
-                    <strong>{index + 1}.</strong> What is the German word for "<em>{q.english}</em>"?
+                  <strong>{index + 1}.</strong> What is the German word for "<em>{q.english}</em>"?
                 </div>
                 <div className="mark-to-practice-section">
-                    <label className="mark-to-practice-container">
+                  <label className="mark-to-practice-container">
                     <input
-                        type="checkbox"
-                        className="mark-to-practice-checkbox"
-                        checked={markedQuestions.has(key)}
-                        onChange={() => toggleMarkQuestion(key)}
+                      type="checkbox"
+                      className="mark-to-practice-checkbox"
+                      checked={markedQuestions.has(key)}
+                      onChange={() => toggleMarkQuestion(key)}
                     />
                     <span className="mark-to-practice-label">Mark to Practice</span>
-                    </label>
+                  </label>
                 </div>
                 <div className="options">
-                    {q.options.map((option, idx) => (
+                  {q.options.map((option, idx) => (
                     <button
-                        key={idx}
-                        className={`option-button ${
+                      key={idx}
+                      className={`option-button ${
                         results[key] !== undefined
-                            ? option === q.german
-                            ? 'correct'
-                            : 'incorrect'
-                            : ''
-                        }`}
-                        onClick={() => handleOptionClick(index, option)}
-                        disabled={results[key] !== undefined}
+                          ? option === q.german
+                          ? 'correct'
+                          : 'incorrect'
+                          : ''
+                      }`}
+                      onClick={() => handleOptionClick(index, option)}
+                      disabled={results[key] !== undefined}
                     >
-                        {option}
+                      {option}
                     </button>
-                    ))}
+                  ))}
                 </div>
                 {results[key] !== undefined && (
-                    <div className={`feedback ${results[key] ? 'correct' : 'incorrect'}`}>
+                  <div className={`feedback ${results[key] ? 'correct' : 'incorrect'}`}>
                     {results[key] ? 'Correct!' : `Wrong! Correct answer: ${q.german}`}
-                    </div>
+                  </div>
                 )}
-                </div>
+              </div>
             );
           })
         )}
