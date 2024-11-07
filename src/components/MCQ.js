@@ -185,12 +185,12 @@ function MCQ() {
 
   const handleReset = () => {
     // Clear all persistent data from localStorage
-    localStorage.removeItem('mcqCorrectCounts');
+    // localStorage.removeItem('mcqCorrectCounts');
     localStorage.removeItem('mcqQuestionOrder');
     localStorage.removeItem('mcqResults');
     localStorage.removeItem('totalscore')
     // localStorage.removeItem('mcqMarkedQuestions');
-    // localStorage.removeItem('mcqScores');
+    localStorage.removeItem('mcqScores');
 
     // Reset all internal state
     // setMarkedQuestions(new Set());
