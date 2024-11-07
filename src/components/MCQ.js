@@ -26,6 +26,9 @@ function MCQ() {
       index === self.findIndex((t) => t.english === v.english && t.german === v.german)
     );
 
+    const storedMarkedQuestions = JSON.parse(localStorage.getItem('mcqMarkedQuestions')) || [];
+    setMarkedQuestions(new Set(storedMarkedQuestions));
+
     const storedQuestions = JSON.parse(localStorage.getItem('mcqQuestionOrder'));
     if (storedQuestions) {
       uniqueVocab = storedQuestions;
