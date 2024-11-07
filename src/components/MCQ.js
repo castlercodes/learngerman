@@ -12,12 +12,11 @@ function MCQ() {
   const [activeQuestions, setActiveQuestions] = useState([]);
   const [results, setResults] = useState({});
   const [score, setScore] = useState(0);
-  const [performanceLevel, setPerformanceLevel] = useState(''); // Store performance level for animation
+  const [performanceLevel, setPerformanceLevel] = useState('');
   const [questionWeights, setQuestionWeights] = useState({});
 
   useEffect(() => {
     initializeQuestions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const initializeQuestions = () => {
@@ -27,16 +26,15 @@ function MCQ() {
 
     const storedCorrectCounts = JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
 
-    // Filter out questions already answered correctly five times
     const filteredVocab = uniqueVocab.filter((q) => {
       const key = `${q.english}-${q.german}`;
-      return !(storedCorrectCounts[key] && storedCorrectCounts[key] >= 5);
+      return !(storedCorrectCounts[key] && storedCorrectCounts[key] >= 2);
     });
 
     const preparedQuestions = shuffleArray(filteredVocab).map((q) => {
       let options = [q.german];
       const shuffledVocab = shuffleArray(uniqueVocab.filter(v => v.german !== q.german));
-      for (let i = 0; i < Math.min(4, shuffledVocab.length); i++) { // Ensure not to exceed array length
+      for (let i = 0; i < Math.min(4, shuffledVocab.length); i++) {
         options.push(shuffledVocab[i].german);
       }
       options = shuffleArray(options);
@@ -49,7 +47,6 @@ function MCQ() {
     setScore(0);
     setPerformanceLevel('');
 
-    // Assign initial weights
     const initialWeight = preparedQuestions.length > 0 ? TOTAL_SCORE / preparedQuestions.length : 0;
     const weights = {};
     preparedQuestions.forEach((q) => {
@@ -57,6 +54,11 @@ function MCQ() {
       weights[key] = initialWeight;
     });
     setQuestionWeights(weights);
+  };
+
+  const resetCounts = () => {
+    localStorage.setItem('mcqCorrectCounts', JSON.stringify({}));
+    initializeQuestions();
   };
 
   const handleOptionClick = (questionIndex, selectedOption) => {
@@ -73,7 +75,6 @@ function MCQ() {
       updateCorrectCount(key, -1);
     }
 
-    // Check if all questions have been answered
     if (Object.keys(results).length + 1 === activeQuestions.length) {
       determinePerformanceLevel();
     }
@@ -82,13 +83,16 @@ function MCQ() {
   const updateCorrectCount = (key, delta) => {
     const storedCorrectCounts = JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
     const currentCount = storedCorrectCounts[key] || 0;
+
+    if(delta === -1){
+      delta = -currentCount;
+    }
+
     const newCount = currentCount + delta;
 
-    if (newCount >= 5) {
-      // Remove question from activeQuestions
+    if (newCount >= 2) {
       const updatedActive = activeQuestions.filter(q => `${q.english}-${q.german}` !== key);
       setActiveQuestions(updatedActive);
-      // Recalculate weights
       const remaining = updatedActive.length;
       if (remaining > 0) {
         const newWeight = TOTAL_SCORE / remaining;
@@ -99,7 +103,7 @@ function MCQ() {
         });
         setQuestionWeights(updatedWeights);
       } else {
-        setScore(TOTAL_SCORE); // If all questions are answered correctly
+        setScore(TOTAL_SCORE);
       }
     } else if (newCount < 0) {
       storedCorrectCounts[key] = 0;
@@ -139,6 +143,8 @@ function MCQ() {
 
   return (
     <div className="mcq-container">
+      <button onClick={resetCounts} className="reset-counts-button">Reset All Counts</button>
+      <button onClick={handleReset} className="reset-button">Reset Questions</button>
       <div className={`fixed-score ${performanceLevel}`}>Current Score: {score.toFixed(2)} / {TOTAL_SCORE}</div>
       
       <div className="questions-list">
@@ -146,7 +152,6 @@ function MCQ() {
           <div className="all-mastered">
             <h2>Congratulations!</h2>
             <p>You have mastered all the questions.</p>
-            <button onClick={handleReset} className="reset-button">Reset Questions</button>
           </div>
         ) : (
           activeQuestions.map((q, index) => {
