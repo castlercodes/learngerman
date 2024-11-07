@@ -58,6 +58,11 @@ function MCQ() {
     setQuestionWeights(weights);
   };
 
+  const resetCounts = () => {
+    localStorage.setItem('mcqCorrectCounts', JSON.stringify({}));
+    initializeQuestions();
+  };
+
   const toggleMarkQuestion = (key) => {
     setMarkedQuestions((prevMarked) => {
       const updatedMarked = new Set(prevMarked);
@@ -146,6 +151,8 @@ function MCQ() {
 
   return (
     <div className="mcq-container">
+      <button onClick={resetCounts} className="reset-counts-button">Reset All Counts</button>
+      <button onClick={handleReset} className="reset-button">Reset Questions</button>
       <div className={`fixed-score ${performanceLevel}`}>Current Score: {score.toFixed(2)} / {TOTAL_SCORE}</div>
       
       <div className="questions-list">
