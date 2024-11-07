@@ -82,6 +82,7 @@ function MCQ() {
     localStorage.removeItem('mcqQuestionOrder');
     localStorage.removeItem('mcqResults');
     localStorage.removeItem('mcqMarkedQuestions');
+    localStorage.removeItem('totalscore')
 
     // Reset all internal state
     setMarkedQuestions(new Set());
@@ -187,6 +188,7 @@ function MCQ() {
     localStorage.removeItem('mcqCorrectCounts');
     localStorage.removeItem('mcqQuestionOrder');
     localStorage.removeItem('mcqResults');
+    localStorage.removeItem('totalscore')
     // localStorage.removeItem('mcqMarkedQuestions');
     // localStorage.removeItem('mcqScores');
 
