@@ -1,5 +1,3 @@
-// src/components/FillIn.js
-
 import React, { useState } from 'react';
 import vocab from '../data/vocab';
 import './FillIn.css';
@@ -15,13 +13,11 @@ function FillIn() {
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
 
-  // Filter out all unique English-German pairs
   const uniqueVocab = vocab.filter((v, index, self) =>
     index === self.findIndex((t) => t.english === v.english && t.german === v.german)
   );
 
-  // Initialize questions once using useState
-  const [questions] = useState(() => shuffleArray(uniqueVocab).slice(0, 50));
+  const [questions] = useState(() => shuffleArray(uniqueVocab));
 
   const handleCheckAnswer = () => {
     setShowAnswer(true);
@@ -38,7 +34,14 @@ function FillIn() {
       setShowAnswer(false);
     } else {
       setCompleted(true);
+      saveScore();
     }
+  };
+
+  const saveScore = () => {
+    const previousScores = JSON.parse(localStorage.getItem('fillinScores')) || [];
+    previousScores.push(score);
+    localStorage.setItem('fillinScores', JSON.stringify(previousScores));
   };
 
   if (completed) {
@@ -53,6 +56,7 @@ function FillIn() {
 
   return (
     <div className="fillin-container">
+      <div className="fixed-score">Current Score: {score}</div>
       <div className="question-count">
         Question {currentQuestion + 1} of {questions.length}
       </div>
@@ -86,6 +90,11 @@ function FillIn() {
             Next
           </button>
         </div>
+      )}
+      {currentQuestion === questions.length - 1 && (
+        <button onClick={() => { saveScore(); window.location.reload(); }} className="reset-button">
+          Reset Questions
+        </button>
       )}
     </div>
   );
