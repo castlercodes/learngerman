@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import vocab from '../data/vocab';
 import './FillIn.css';
 
@@ -7,36 +7,102 @@ function shuffleArray(array) {
 }
 
 function FillIn() {
+  const TOTAL_SCORE = 88;
+  const [allQuestions, setAllQuestions] = useState([]);
+  const [activeQuestions, setActiveQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
-  const [performanceLevel, setPerformanceLevel] = useState(''); // For animations
+  const [performanceLevel, setPerformanceLevel] = useState('');
+  const [questionWeights, setQuestionWeights] = useState({});
 
-  const uniqueVocab = vocab.filter((v, index, self) =>
-    index === self.findIndex((t) => t.english === v.english && t.german === v.german)
-  );
+  useEffect(() => {
+    initializeQuestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const [questions] = useState(() => shuffleArray(uniqueVocab));
+  const initializeQuestions = () => {
+    const uniqueVocab = vocab.filter((v, index, self) =>
+      index === self.findIndex((t) => t.english === v.english && t.german === v.german)
+    );
+
+    const storedCorrectCounts = JSON.parse(localStorage.getItem('fillinCorrectCounts')) || {};
+
+    // Filter out questions already answered correctly five times
+    const filteredVocab = uniqueVocab.filter((q) => {
+      const key = `${q.english}-${q.german}`;
+      return !(storedCorrectCounts[key] && storedCorrectCounts[key] >= 5);
+    });
+
+    const preparedQuestions = shuffleArray(filteredVocab);
+
+    setAllQuestions(preparedQuestions);
+    setActiveQuestions(preparedQuestions);
+    setCurrentQuestion(0);
+    setUserAnswer('');
+    setShowAnswer(false);
+    setScore(0);
+    setCompleted(false);
+
+    // Assign initial weights
+    const initialWeight = preparedQuestions.length > 0 ? TOTAL_SCORE / preparedQuestions.length : 0;
+    const weights = {};
+    preparedQuestions.forEach((q) => {
+      const key = `${q.english}-${q.german}`;
+      weights[key] = initialWeight;
+    });
+    setQuestionWeights(weights);
+  };
 
   const handleCheckAnswer = () => {
+    const question = activeQuestions[currentQuestion];
+    const key = `${question.english}-${question.german}`;
     setShowAnswer(true);
-    if (userAnswer.trim().toLowerCase() === questions[currentQuestion].german.toLowerCase()) {
-      setScore(score + 1);
+    const isCorrect = userAnswer.trim().toLowerCase() === question.german.toLowerCase();
+    if (isCorrect) {
+      setScore((prev) => prev + questionWeights[key]);
+      updateCorrectCount(key, 1);
+    } else {
+      updateCorrectCount(key, -1);
+    }
+
+    // Check if all questions have been answered
+    if (currentQuestion + 1 >= activeQuestions.length) {
+      determinePerformanceLevel();
     }
   };
 
-  const handleNext = () => {
-    const nextQuestion = currentQuestion + 1;
-    if (nextQuestion < questions.length) {
-      setCurrentQuestion(nextQuestion);
-      setUserAnswer('');
-      setShowAnswer(false);
+  const updateCorrectCount = (key, delta) => {
+    const storedCorrectCounts = JSON.parse(localStorage.getItem('fillinCorrectCounts')) || {};
+    const currentCount = storedCorrectCounts[key] || 0;
+    const newCount = currentCount + delta;
+
+    if (newCount >= 5) {
+      // Remove question from activeQuestions
+      const updatedActive = activeQuestions.filter(q => `${q.english}-${q.german}` !== key);
+      setActiveQuestions(updatedActive);
+      // Recalculate weights
+      const remaining = updatedActive.length;
+      if (remaining > 0) {
+        const newWeight = TOTAL_SCORE / remaining;
+        const updatedWeights = {};
+        updatedActive.forEach(q => {
+          const qKey = `${q.english}-${q.german}`;
+          updatedWeights[qKey] = newWeight;
+        });
+        setQuestionWeights(updatedWeights);
+      } else {
+        setScore(TOTAL_SCORE); // If all questions are answered correctly
+        setCompleted(true);
+      }
+    } else if (newCount < 0) {
+      storedCorrectCounts[key] = 0;
     } else {
-      setCompleted(true);
-      determinePerformanceLevel();
+      storedCorrectCounts[key] = newCount;
     }
+    localStorage.setItem('fillinCorrectCounts', JSON.stringify(storedCorrectCounts));
   };
 
   const determinePerformanceLevel = () => {
@@ -62,27 +128,51 @@ function FillIn() {
     localStorage.setItem('fillinScores', JSON.stringify(previousScores));
   };
 
-  const handleReset = () => {
-    saveScore();
-    window.location.reload(); // Reload to reset questions
+  const handleNext = () => {
+    if (currentQuestion + 1 < activeQuestions.length) {
+      setCurrentQuestion(currentQuestion + 1);
+      setUserAnswer('');
+      setShowAnswer(false);
+    } else {
+      setCompleted(true);
+    }
   };
 
-  if (completed) {
+  const handleReset = () => {
+    saveScore();
+    initializeQuestions();
+  };
+
+  if (activeQuestions.length === 0 && !completed) {
+    // All questions mastered
     return (
       <div className={`score-section ${performanceLevel}`}>
-        You scored {score} out of {questions.length}
+        <h2>Congratulations!</h2>
+        <p>You have mastered all the questions.</p>
+        <p>Your Score: {score.toFixed(2)} / {TOTAL_SCORE}</p>
         <button onClick={handleReset} className="reset-button">Reset Questions</button>
       </div>
     );
   }
 
-  const current = questions[currentQuestion];
+  if (completed) {
+    return (
+      <div className={`score-section ${performanceLevel}`}>
+        <h2>Quiz Completed!</h2>
+        <p>You scored {score.toFixed(2)} out of {TOTAL_SCORE}</p>
+        <button onClick={handleReset} className="reset-button">Reset Questions</button>
+      </div>
+    );
+  }
+
+  const current = activeQuestions[currentQuestion];
+  const keyId = `${current.english}-${current.german}`;
 
   return (
     <div className="fillin-container">
-      <div className={`fixed-score ${performanceLevel}`}>Current Score: {score}</div>
+      <div className={`fixed-score ${performanceLevel}`}>Current Score: {score.toFixed(2)} / {TOTAL_SCORE}</div>
       <div className="question-count">
-        Question {currentQuestion + 1} of {questions.length}
+        Question {currentQuestion + 1} of {activeQuestions.length}
       </div>
       <div className="question-text">
         What is the German word for "<strong>{current.english}</strong>"?
@@ -92,14 +182,16 @@ function FillIn() {
           type="text"
           value={userAnswer}
           onChange={(e) => setUserAnswer(e.target.value)}
-          className="answer-input"
+          className={`answer-input ${showAnswer ? (userAnswer.trim().toLowerCase() === current.german.toLowerCase() ? 'correct' : 'incorrect') : ''}`}
           disabled={showAnswer}
           placeholder="Type the German word here"
           required
         />
-        <button onClick={handleCheckAnswer} className="submit-button" disabled={showAnswer}>
-          Submit
-        </button>
+        {!showAnswer && (
+          <button onClick={handleCheckAnswer} className="submit-button" disabled={showAnswer}>
+            Submit
+          </button>
+        )}
       </div>
       {showAnswer && (
         <div className="answer-section">

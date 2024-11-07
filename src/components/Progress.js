@@ -24,20 +24,20 @@ function Progress() {
     setFillinScores(fillinData);
   }, []);
 
-  const getChartData = (scores) => ({
+  const getChartData = (scores, labelColor) => ({
     labels: scores.map((_, index) => `Attempt ${index + 1}`),
     datasets: [
       {
         label: 'Score',
         data: scores,
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        backgroundColor: labelColor || 'rgba(54, 162, 235, 0.6)',
       },
     ],
   });
 
   const getStats = (scores) => ({
-    max: Math.max(...scores),
-    min: Math.min(...scores),
+    max: scores.length > 0 ? Math.max(...scores) : 0,
+    min: scores.length > 0 ? Math.min(...scores) : 0,
     avg: scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2) : 0,
   });
 
@@ -49,7 +49,7 @@ function Progress() {
         <p>Min Score: {getStats(mcqScores).min || 0}</p>
         <p>Average Score: {getStats(mcqScores).avg || 0}</p>
       </div>
-      <Bar data={getChartData(mcqScores)} />
+      <Bar data={getChartData(mcqScores, 'rgba(54, 162, 235, 0.6)')} />
 
       <h2>Fill-In Progress</h2>
       <div className="stats">
@@ -57,7 +57,7 @@ function Progress() {
         <p>Min Score: {getStats(fillinScores).min || 0}</p>
         <p>Average Score: {getStats(fillinScores).avg || 0}</p>
       </div>
-      <Bar data={getChartData(fillinScores)} />
+      <Bar data={getChartData(fillinScores, 'rgba(255, 99, 132, 0.6)')} />
     </div>
   );
 }

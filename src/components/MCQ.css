@@ -1,159 +1,192 @@
-/* src/components/MCQ.css */
+/* Common Animations for MCQ and FillIn */
 
-.mcq-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  
-  .reset-button {
-    padding: 10px 20px;
-    margin-bottom: 20px;
-    background-color: #ff5722;
-    color: #f0f0f0;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .reset-button:hover {
-    background-color: #e64a19;
-  }
-  
-  .questions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  .question-card {
-    background-color: #444;
-    padding: 15px;
-    border-radius: 8px;
-  }
-  
-  .question-text {
-    margin-bottom: 10px;
-    color: #f0f0f0;
-  }
-  
-  .options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  
-  .option-button {
-    padding: 10px 15px;
-    background-color: #666;
-    color: #f0f0f0;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    flex: 1 1 30%;
-    transition: background-color 0.3s;
-  }
-  
-  .option-button:hover:not(:disabled) {
-    background-color: #555;
-  }
-  
-  .option-button.correct {
+/* Fixed Score Display Animations */
+.fixed-score.new-high,
+.score-section.new-high {
+  animation: bounce-green 1s infinite;
+}
+
+.fixed-score.new-low,
+.score-section.new-low {
+  animation: shake-red 0.7s infinite;
+}
+
+.fixed-score.average,
+.score-section.average {
+  animation: glow-blue 2s infinite;
+}
+
+/* Keyframes for Animations */
+@keyframes bounce-green {
+  0%, 100% {
+    transform: translateY(0);
     background-color: #4caf50;
-    color: #fff;
   }
-  
-  .option-button.incorrect {
-    background-color: #f44336;
-    color: #fff;
+  50% {
+    transform: translateY(-10px);
+    background-color: #66bb6a;
   }
-  
-  .feedback {
-    margin-top: 10px;
-    font-weight: bold;
-  }
-  
-  .feedback.correct {
-    color: #4caf50;
-  }
-  
-  .feedback.incorrect {
-    color: #f44336;
-  }
-  
-  /* src/components/MCQ.css *//* src/components/MCQ.css */
+}
 
+@keyframes shake-red {
+  0%, 100% { transform: translateX(0); background-color: #f44336; }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+@keyframes glow-blue {
+  0%, 100% { box-shadow: 0 0 5px #2196f3; background-color: #2196f3; }
+  50% { box-shadow: 0 0 20px #64b5f6; background-color: #64b5f6; }
+}
+
+/* Reset Button Styling */
+.reset-button {
+  display: block;
+  margin: 20px auto;
+  padding: 12px 24px;
+  background-color: #ff5722;
+  color: #f0f0f0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.reset-button:hover {
+  background-color: #e64a19;
+  transform: scale(1.05);
+}
+
+/* Fixed Score Display */
 .fixed-score {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background-color: #333;
-    color: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    z-index: 1000;
-    transition: transform 0.3s ease;
-  }
-  
-  .fixed-score.new-high {
-    animation: pulse-green 1s infinite;
-  }
-  
-  .fixed-score.new-low {
-    animation: pulse-red 1s infinite;
-  }
-  
-  .fixed-score.average {
-    animation: pulse-blue 1s infinite;
-  }
-  
-  @keyframes pulse-green {
-    0%, 100% {
-      transform: scale(1);
-      background-color: #4caf50;
-    }
-    50% {
-      transform: scale(1.1);
-      background-color: #66bb6a;
-    }
-  }
-  
-  @keyframes pulse-red {
-    0%, 100% {
-      transform: scale(1);
-      background-color: #f44336;
-    }
-    50% {
-      transform: scale(1.1);
-      background-color: #e57373;
-    }
-  }
-  
-  @keyframes pulse-blue {
-    0%, 100% {
-      transform: scale(1);
-      background-color: #2196f3;
-    }
-    50% {
-      transform: scale(1.1);
-      background-color: #64b5f6;
-    }
-  }
-  
-  .reset-button {
-    display: block;
-    margin: 20px auto;
-    padding: 10px 20px;
-    background-color: #ff5722;
-    color: #f0f0f0;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .reset-button:hover {
-    background-color: #e64a19;
-  }
-  
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  background-color: #333;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  z-index: 1000;
+  font-size: 1.2em;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+/* Questions List Styling */
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding: 80px 20px 20px 20px; /* Increased top padding to avoid overlap with fixed score */
+}
+
+.all-mastered {
+  text-align: center;
+  padding: 40px;
+  background-color: var(--primary-color);
+  border-radius: 10px;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.all-mastered h2 {
+  color: var(--text-color);
+  margin-bottom: 10px;
+}
+
+.all-mastered p {
+  color: var(--text-color);
+  margin-bottom: 20px;
+}
+
+.question-card {
+  background-color: var(--primary-color);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.question-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+.question-text {
+  margin-bottom: 15px;
+  color: var(--text-color);
+  font-size: 1.2em;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.option-button {
+  padding: 12px 20px;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 1 1 45%;
+  transition: background-color 0.3s, color 0.3s, transform 0.2s;
+  font-size: 1em;
+}
+
+.option-button:hover:not(:disabled) {
+  background-color: var(--accent-color);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.option-button.correct {
+  background-color: var(--correct-color) !important;
+  color: #fff !important;
+  animation: highlightCorrect 0.5s;
+}
+
+.option-button.incorrect {
+  background-color: var(--incorrect-color) !important;
+  color: #fff !important;
+  animation: highlightIncorrect 0.5s;
+}
+
+@keyframes highlightCorrect {
+  from { background-color: var(--correct-color); }
+  to { background-color: #2e7d32; }
+}
+
+@keyframes highlightIncorrect {
+  from { background-color: var(--incorrect-color); }
+  to { background-color: #c62828; }
+}
+
+.feedback {
+  margin-top: 12px;
+  font-weight: bold;
+  font-size: 1.1em;
+  transition: color 0.3s;
+}
+
+.feedback.correct {
+  color: var(--correct-color);
+  animation: fadeInCorrect 0.5s;
+}
+
+.feedback.incorrect {
+  color: var(--incorrect-color);
+  animation: fadeInIncorrect 0.5s;
+}
+
+@keyframes fadeInCorrect {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInIncorrect {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
