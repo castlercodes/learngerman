@@ -130,29 +130,34 @@ function MCQ() {
   const updateCorrectCount = (key, delta) => {
     const storedCorrectCounts = JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
     const currentCount = storedCorrectCounts[key] || 0;
-
+  
     const newCount = delta === -1 ? 0 : currentCount + delta;
-
+    storedCorrectCounts[key] = newCount; // Update the count in localStorage
+  
+    // Check if the question has been answered correctly twice
     if (newCount >= 2 && !markedQuestions.has(key)) {
-      const updatedActive = activeQuestions.filter(q => `${q.english}-${q.german}` !== key);
-      setActiveQuestions(updatedActive);
-      const remaining = updatedActive.length;
+      // Remove the question from active questions
+      const updatedActiveQuestions = activeQuestions.filter(q => `${q.english}-${q.german}` !== key);
+      setActiveQuestions(updatedActiveQuestions);
+  
+      // Recalculate weights for remaining questions
+      const remaining = updatedActiveQuestions.length;
       if (remaining > 0) {
         const newWeight = TOTAL_SCORE / remaining;
         const updatedWeights = {};
-        updatedActive.forEach(q => {
+        updatedActiveQuestions.forEach(q => {
           const qKey = `${q.english}-${q.german}`;
           updatedWeights[qKey] = newWeight;
         });
         setQuestionWeights(updatedWeights);
       } else {
-        setScore(TOTAL_SCORE);
+        setScore(TOTAL_SCORE); // Set score to maximum if all questions are answered
       }
-    } else {
-      storedCorrectCounts[key] = newCount;
     }
-    localStorage.setItem('mcqCorrectCounts', JSON.stringify(storedCorrectCounts));
+  
+    localStorage.setItem('mcqCorrectCounts', JSON.stringify(storedCorrectCounts)); // Save updated counts
   };
+  
 
   const determinePerformanceLevel = () => {
     const previousScores = JSON.parse(localStorage.getItem('mcqScores')) || [];
