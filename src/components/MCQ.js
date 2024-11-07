@@ -27,14 +27,11 @@ function MCQ() {
     );
 
     const storedQuestions = JSON.parse(localStorage.getItem('mcqQuestionOrder'));
-    if (storedQuestions) {
-      uniqueVocab = storedQuestions;
-    } else {
-      uniqueVocab = shuffleArray(uniqueVocab);
-      localStorage.setItem('mcqQuestionOrder', JSON.stringify(uniqueVocab));
-    }
+    uniqueVocab = storedQuestions || shuffleArray(uniqueVocab);
 
     const storedCorrectCounts = JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
+    const storedMarkedQuestions = JSON.parse(localStorage.getItem('mcqMarkedQuestions')) || [];
+    setMarkedQuestions(new Set(storedMarkedQuestions));
 
     const filteredVocab = uniqueVocab.filter((q) => {
       const key = `${q.english}-${q.german}`;
@@ -77,16 +74,10 @@ function MCQ() {
   };
 
   const resetCounts = () => {
-    // Clear count and question order from local storage
-    localStorage.removeItem('mcqCorrectCounts');
-    localStorage.removeItem('mcqQuestionOrder');
-    localStorage.removeItem('mcqResults');
-    localStorage.removeItem('mcqMarkedQuestions');
-    localStorage.removeItem('totalscore')
-
-    // Reset all internal state
+    localStorage.clear();
     setMarkedQuestions(new Set());
     setResults({});
+    setScore(0);
     initializeQuestions();
   };
 
@@ -116,8 +107,8 @@ function MCQ() {
     });
     if (isCorrect) {
       const newScore = score + questionWeights[key];
-      setScore(newScore); // Update the state with the new score
-      localStorage.setItem('totalscore', JSON.stringify(newScore)); 
+      setScore(newScore);
+      localStorage.setItem('totalscore', JSON.stringify(newScore));
       updateCorrectCount(key, 1);
     } else {
       updateCorrectCount(key, -1);
@@ -131,17 +122,14 @@ function MCQ() {
   const updateCorrectCount = (key, delta) => {
     const storedCorrectCounts = JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
     const currentCount = storedCorrectCounts[key] || 0;
-  
+
     const newCount = delta === -1 ? 0 : currentCount + delta;
-    storedCorrectCounts[key] = newCount; // Update the count in localStorage
-  
-    // Check if the question has been answered correctly twice
+    storedCorrectCounts[key] = newCount;
+
     if (newCount >= 2 && !markedQuestions.has(key)) {
-      // Remove the question from active questions
       const updatedActiveQuestions = activeQuestions.filter(q => `${q.english}-${q.german}` !== key);
       setActiveQuestions(updatedActiveQuestions);
-  
-      // Recalculate weights for remaining questions
+
       const remaining = updatedActiveQuestions.length;
       if (remaining > 0) {
         const newWeight = TOTAL_SCORE / remaining;
@@ -152,13 +140,12 @@ function MCQ() {
         });
         setQuestionWeights(updatedWeights);
       } else {
-        setScore(TOTAL_SCORE); // Set score to maximum if all questions are answered
+        setScore(TOTAL_SCORE);
       }
     }
-  
-    localStorage.setItem('mcqCorrectCounts', JSON.stringify(storedCorrectCounts)); // Save updated counts
+
+    localStorage.setItem('mcqCorrectCounts', JSON.stringify(storedCorrectCounts));
   };
-  
 
   const determinePerformanceLevel = () => {
     const previousScores = JSON.parse(localStorage.getItem('mcqScores')) || [];
@@ -173,7 +160,7 @@ function MCQ() {
     } else {
       setPerformanceLevel('average');
     }
-    
+
     saveScore();
   };
 
@@ -184,16 +171,7 @@ function MCQ() {
   };
 
   const handleReset = () => {
-    // Clear all persistent data from localStorage
-    // localStorage.removeItem('mcqCorrectCounts');
-    localStorage.removeItem('mcqQuestionOrder');
-    localStorage.removeItem('mcqResults');
-    localStorage.removeItem('totalscore')
-    // localStorage.removeItem('mcqMarkedQuestions');
-    // localStorage.removeItem('mcqScores');
-
-    // Reset all internal state
-    // setMarkedQuestions(new Set());
+    localStorage.clear();
     setResults({});
     initializeQuestions();
   };
@@ -209,7 +187,6 @@ function MCQ() {
           <div className="all-mastered">
             <h2>Congratulations!</h2>
             <p>You have mastered all the questions.</p>
-            {/* <button onClick={handleReset} className="reset-button">Reset Questions</button> */}
           </div>
         ) : (
           activeQuestions.map((q, index) => {
@@ -256,9 +233,6 @@ function MCQ() {
               </div>
             );
           })
-        )}
-        {activeQuestions.length > 0 && (
-          <button onClick={handleReset} className="reset-button">Reset Questions</button>
         )}
       </div>
     </div>
