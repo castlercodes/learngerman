@@ -159,41 +159,45 @@ function MCQ() {
           activeQuestions.map((q, index) => {
             const key = `${q.english}-${q.german}`;
             return (
-              <div key={key} className="question-card">
+                <div key={key} className="question-card">
                 <div className="question-text">
-                  <strong>{index + 1}.</strong> What is the German word for "<em>{q.english}</em>"?
+                    <strong>{index + 1}.</strong> What is the German word for "<em>{q.english}</em>"?
                 </div>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={markedQuestions.has(key)}
-                    onChange={() => toggleMarkQuestion(key)}
-                  /> Mark to Practice
-                </label>
+                <div className="mark-to-practice-section">
+                    <label className="mark-to-practice-container">
+                    <input
+                        type="checkbox"
+                        className="mark-to-practice-checkbox"
+                        checked={markedQuestions.has(key)}
+                        onChange={() => toggleMarkQuestion(key)}
+                    />
+                    <span className="mark-to-practice-label">Mark to Practice</span>
+                    </label>
+                </div>
                 <div className="options">
-                  {q.options.map((option, idx) => (
+                    {q.options.map((option, idx) => (
                     <button
-                      key={idx}
-                      className={`option-button ${
+                        key={idx}
+                        className={`option-button ${
                         results[key] !== undefined
-                          ? option === q.german
+                            ? option === q.german
                             ? 'correct'
                             : 'incorrect'
-                          : ''
-                      }`}
-                      onClick={() => handleOptionClick(index, option)}
-                      disabled={results[key] !== undefined}
+                            : ''
+                        }`}
+                        onClick={() => handleOptionClick(index, option)}
+                        disabled={results[key] !== undefined}
                     >
-                      {option}
+                        {option}
                     </button>
-                  ))}
+                    ))}
                 </div>
                 {results[key] !== undefined && (
-                  <div className={`feedback ${results[key] ? 'correct' : 'incorrect'}`}>
+                    <div className={`feedback ${results[key] ? 'correct' : 'incorrect'}`}>
                     {results[key] ? 'Correct!' : `Wrong! Correct answer: ${q.german}`}
-                  </div>
+                    </div>
                 )}
-              </div>
+                </div>
             );
           })
         )}

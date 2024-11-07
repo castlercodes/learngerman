@@ -206,3 +206,56 @@
     background-color: #0056b3;
   }
   
+  /* Container for the "Mark to Practice" option */
+.mark-to-practice-container {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 0.9em;
+    cursor: pointer;
+  }
+  
+  /* Custom checkbox styling */
+  .mark-to-practice-checkbox {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #007bff;
+    border-radius: 3px;
+    margin-right: 8px;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+  
+  .mark-to-practice-checkbox:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+  
+  .mark-to-practice-checkbox:checked::after {
+    content: '✔';
+    position: absolute;
+    top: 0;
+    left: 2px;
+    font-size: 14px;
+    color: white;
+  }
+  
+  /* Label for "Mark to Practice" */
+  .mark-to-practice-label {
+    color: #333;
+    user-select: none;
+    transition: color 0.2s;
+  }
+  
+  .mark-to-practice-checkbox:checked + .mark-to-practice-label {
+    color: #007bff;
+    font-weight: bold;
+  }
+  
+  /* Additional spacing for checkbox section */
+  .mark-to-practice-section {
+    margin-bottom: 15px;
+  }
+  
