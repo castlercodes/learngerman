@@ -190,7 +190,7 @@ function MCQ() {
     localStorage.removeItem('mcqResults');
     localStorage.removeItem('totalscore')
     // localStorage.removeItem('mcqMarkedQuestions');
-    localStorage.removeItem('mcqScores');
+    // localStorage.removeItem('mcqScores');
 
     // Reset all internal state
     // setMarkedQuestions(new Set());
