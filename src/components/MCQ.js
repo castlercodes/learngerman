@@ -26,7 +26,6 @@ function MCQ() {
       index === self.findIndex((t) => t.english === v.english && t.german === v.german)
     );
 
-    // Check if the shuffled question order exists in localStorage
     const storedQuestions = JSON.parse(localStorage.getItem('mcqQuestionOrder'));
     if (storedQuestions) {
       uniqueVocab = storedQuestions;
@@ -37,7 +36,6 @@ function MCQ() {
 
     const storedCorrectCounts = JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
 
-    // Filter out questions that have been answered correctly twice and are not marked
     const filteredVocab = uniqueVocab.filter((q) => {
       const key = `${q.english}-${q.german}`;
       return markedQuestions.has(key) || !(storedCorrectCounts[key] && storedCorrectCounts[key] >= 2);
@@ -55,7 +53,8 @@ function MCQ() {
 
     setAllQuestions(preparedQuestions);
     setActiveQuestions(preparedQuestions);
-    setScore(calculateScoreFromResults(results, preparedQuestions));
+    setScore(0);
+    setPerformanceLevel('');
 
     const initialWeight = preparedQuestions.length > 0 ? TOTAL_SCORE / preparedQuestions.length : 0;
     const weights = {};
@@ -74,24 +73,16 @@ function MCQ() {
     setResults(storedResults);
   };
 
-  const calculateScoreFromResults = (storedResults, questions) => {
-    let totalScore = 0;
-    questions.forEach((q) => {
-      const key = `${q.english}-${q.german}`;
-      if (storedResults[key] === true) {
-        totalScore += questionWeights[key] || 0;
-      }
-    });
-    return totalScore;
-  };
-
-  const saveStateToStorage = () => {
-    localStorage.setItem('mcqMarkedQuestions', JSON.stringify([...markedQuestions]));
-    localStorage.setItem('mcqResults', JSON.stringify(results));
-  };
-
   const resetCounts = () => {
-    localStorage.setItem('mcqCorrectCounts', JSON.stringify({}));
+    // Clear count and question order from local storage
+    localStorage.removeItem('mcqCorrectCounts');
+    localStorage.removeItem('mcqQuestionOrder');
+    localStorage.removeItem('mcqResults');
+    localStorage.removeItem('mcqMarkedQuestions');
+
+    // Reset all internal state
+    setMarkedQuestions(new Set());
+    setResults({});
     initializeQuestions();
   };
 
@@ -103,7 +94,7 @@ function MCQ() {
       } else {
         updatedMarked.add(key);
       }
-      localStorage.setItem('mcqMarkedQuestions', JSON.stringify([...updatedMarked])); // Save immediately
+      localStorage.setItem('mcqMarkedQuestions', JSON.stringify([...updatedMarked]));
       return updatedMarked;
     });
   };
@@ -116,7 +107,7 @@ function MCQ() {
     const isCorrect = selectedOption === question.german;
     setResults((prev) => {
       const updatedResults = { ...prev, [key]: isCorrect };
-      localStorage.setItem('mcqResults', JSON.stringify(updatedResults)); // Save immediately
+      localStorage.setItem('mcqResults', JSON.stringify(updatedResults));
       return updatedResults;
     });
     if (isCorrect) {
@@ -182,13 +173,23 @@ function MCQ() {
   };
 
   const handleReset = () => {
-    saveScore();
+    // Clear all persistent data from localStorage
+    localStorage.removeItem('mcqCorrectCounts');
+    localStorage.removeItem('mcqQuestionOrder');
+    localStorage.removeItem('mcqResults');
+    // localStorage.removeItem('mcqMarkedQuestions');
+    // localStorage.removeItem('mcqScores');
+
+    // Reset all internal state
+    // setMarkedQuestions(new Set());
+    setResults({});
     initializeQuestions();
   };
 
   return (
     <div className="mcq-container">
       <button onClick={resetCounts} className="reset-counts-button">Reset All Counts</button>
+      <button onClick={handleReset} className="reset-button">Reset Questions</button>
       <div className={`fixed-score ${performanceLevel}`}>Current Score: {score.toFixed(2)} / {TOTAL_SCORE}</div>
       
       <div className="questions-list">
@@ -196,7 +197,7 @@ function MCQ() {
           <div className="all-mastered">
             <h2>Congratulations!</h2>
             <p>You have mastered all the questions.</p>
-            <button onClick={handleReset} className="reset-button">Reset Questions</button>
+            {/* <button onClick={handleReset} className="reset-button">Reset Questions</button> */}
           </div>
         ) : (
           activeQuestions.map((q, index) => {
