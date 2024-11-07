@@ -1,0 +1,29 @@
+/* src/components/Navigation.css */
+
+.navigation {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .navigation a {
+    text-decoration: none;
+    color: #f0f0f0;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #333;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .navigation a.active {
+    background-color: #555;
+    color: #fff;
+  }
+  
+  .navigation a:hover {
+    background-color: #555;
+    color: #fff;
+  }
+  

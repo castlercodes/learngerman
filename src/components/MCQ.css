@@ -1,0 +1,84 @@
+/* src/components/MCQ.css */
+
+.mcq-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .reset-button {
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    background-color: #ff5722;
+    color: #f0f0f0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .reset-button:hover {
+    background-color: #e64a19;
+  }
+  
+  .questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .question-card {
+    background-color: #444;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  .question-text {
+    margin-bottom: 10px;
+    color: #f0f0f0;
+  }
+  
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .option-button {
+    padding: 10px 15px;
+    background-color: #666;
+    color: #f0f0f0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    flex: 1 1 30%;
+    transition: background-color 0.3s;
+  }
+  
+  .option-button:hover:not(:disabled) {
+    background-color: #555;
+  }
+  
+  .option-button.correct {
+    background-color: #4caf50;
+    color: #fff;
+  }
+  
+  .option-button.incorrect {
+    background-color: #f44336;
+    color: #fff;
+  }
+  
+  .feedback {
+    margin-top: 10px;
+    font-weight: bold;
+  }
+  
+  .feedback.correct {
+    color: #4caf50;
+  }
+  
+  .feedback.incorrect {
+    color: #f44336;
+  }
+  
