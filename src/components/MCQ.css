@@ -82,7 +82,7 @@
     color: #f44336;
   }
   
-  /* src/components/MCQ.css */
+  /* src/components/MCQ.css *//* src/components/MCQ.css */
 
 .fixed-score {
     position: fixed;
@@ -93,6 +93,52 @@
     padding: 10px;
     border-radius: 5px;
     z-index: 1000;
+    transition: transform 0.3s ease;
+  }
+  
+  .fixed-score.new-high {
+    animation: pulse-green 1s infinite;
+  }
+  
+  .fixed-score.new-low {
+    animation: pulse-red 1s infinite;
+  }
+  
+  .fixed-score.average {
+    animation: pulse-blue 1s infinite;
+  }
+  
+  @keyframes pulse-green {
+    0%, 100% {
+      transform: scale(1);
+      background-color: #4caf50;
+    }
+    50% {
+      transform: scale(1.1);
+      background-color: #66bb6a;
+    }
+  }
+  
+  @keyframes pulse-red {
+    0%, 100% {
+      transform: scale(1);
+      background-color: #f44336;
+    }
+    50% {
+      transform: scale(1.1);
+      background-color: #e57373;
+    }
+  }
+  
+  @keyframes pulse-blue {
+    0%, 100% {
+      transform: scale(1);
+      background-color: #2196f3;
+    }
+    50% {
+      transform: scale(1.1);
+      background-color: #64b5f6;
+    }
   }
   
   .reset-button {

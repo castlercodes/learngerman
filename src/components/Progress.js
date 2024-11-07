@@ -11,7 +11,6 @@ import {
 } from 'chart.js';
 import './Progress.css';
 
-// Register the required components with Chart.js
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function Progress() {
@@ -39,6 +38,7 @@ function Progress() {
   const getStats = (scores) => ({
     max: Math.max(...scores),
     min: Math.min(...scores),
+    avg: scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2) : 0,
   });
 
   return (
@@ -47,6 +47,7 @@ function Progress() {
       <div className="stats">
         <p>Max Score: {getStats(mcqScores).max || 0}</p>
         <p>Min Score: {getStats(mcqScores).min || 0}</p>
+        <p>Average Score: {getStats(mcqScores).avg || 0}</p>
       </div>
       <Bar data={getChartData(mcqScores)} />
 
@@ -54,6 +55,7 @@ function Progress() {
       <div className="stats">
         <p>Max Score: {getStats(fillinScores).max || 0}</p>
         <p>Min Score: {getStats(fillinScores).min || 0}</p>
+        <p>Average Score: {getStats(fillinScores).avg || 0}</p>
       </div>
       <Bar data={getChartData(fillinScores)} />
     </div>

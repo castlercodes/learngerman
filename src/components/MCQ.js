@@ -10,6 +10,7 @@ function MCQ() {
   const [questions, setQuestions] = useState([]);
   const [results, setResults] = useState({});
   const [score, setScore] = useState(0);
+  const [performanceLevel, setPerformanceLevel] = useState(''); // Store performance level for animation
 
   useEffect(() => {
     generateQuestions();
@@ -20,7 +21,7 @@ function MCQ() {
       index === self.findIndex((t) => t.english === v.english && t.german === v.german)
     );
 
-    const preparedQuestions = uniqueVocab.map((q) => {
+    const preparedQuestions = shuffleArray(uniqueVocab).map((q) => {
       let options = [q.german];
       const shuffledVocab = shuffleArray(uniqueVocab.filter(v => v.german !== q.german));
       for (let i = 0; i < 5; i++) {
@@ -33,6 +34,7 @@ function MCQ() {
     setQuestions(preparedQuestions);
     setResults({});
     setScore(0);
+    setPerformanceLevel('');
   };
 
   const handleOptionClick = (questionIndex, selectedOption) => {
@@ -44,15 +46,26 @@ function MCQ() {
       setScore((prev) => prev + 1);
     }
 
-    // Store the score when the attempt is complete
     if (Object.keys(results).length + 1 === questions.length) {
-      saveScore();
+      determinePerformanceLevel();
     }
   };
 
-  const handleReset = () => {
+  const determinePerformanceLevel = () => {
+    const previousScores = JSON.parse(localStorage.getItem('mcqScores')) || [];
+    const maxScore = Math.max(...previousScores, score);
+    const minScore = Math.min(...previousScores, score);
+    const avgScore = previousScores.length > 0 ? previousScores.reduce((a, b) => a + b, 0) / previousScores.length : 0;
+
+    if (score > maxScore) {
+      setPerformanceLevel('new-high');
+    } else if (score < minScore) {
+      setPerformanceLevel('new-low');
+    } else {
+      setPerformanceLevel('average');
+    }
+    
     saveScore();
-    generateQuestions();
   };
 
   const saveScore = () => {
@@ -61,9 +74,15 @@ function MCQ() {
     localStorage.setItem('mcqScores', JSON.stringify(previousScores));
   };
 
+  const handleReset = () => {
+    saveScore();
+    generateQuestions();
+  };
+
   return (
     <div className="mcq-container">
-      <div className="fixed-score">Current Score: {score}</div>
+      <div className={`fixed-score ${performanceLevel}`}>Current Score: {score}</div>
+      <button onClick={handleReset} className="reset-button">Reset Questions</button>
       <div className="questions-list">
         {questions.map((q, index) => (
           <div key={index} className="question-card">

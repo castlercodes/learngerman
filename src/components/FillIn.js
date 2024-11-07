@@ -12,6 +12,7 @@ function FillIn() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [performanceLevel, setPerformanceLevel] = useState(''); // For animations
 
   const uniqueVocab = vocab.filter((v, index, self) =>
     index === self.findIndex((t) => t.english === v.english && t.german === v.german)
@@ -34,8 +35,25 @@ function FillIn() {
       setShowAnswer(false);
     } else {
       setCompleted(true);
-      saveScore();
+      determinePerformanceLevel();
     }
+  };
+
+  const determinePerformanceLevel = () => {
+    const previousScores = JSON.parse(localStorage.getItem('fillinScores')) || [];
+    const maxScore = Math.max(...previousScores, score);
+    const minScore = Math.min(...previousScores, score);
+    const avgScore = previousScores.length > 0 ? previousScores.reduce((a, b) => a + b, 0) / previousScores.length : 0;
+
+    if (score > maxScore) {
+      setPerformanceLevel('new-high');
+    } else if (score < minScore) {
+      setPerformanceLevel('new-low');
+    } else {
+      setPerformanceLevel('average');
+    }
+    
+    saveScore();
   };
 
   const saveScore = () => {
@@ -44,10 +62,16 @@ function FillIn() {
     localStorage.setItem('fillinScores', JSON.stringify(previousScores));
   };
 
+  const handleReset = () => {
+    saveScore();
+    window.location.reload(); // Reload to reset questions
+  };
+
   if (completed) {
     return (
-      <div className="score-section">
+      <div className={`score-section ${performanceLevel}`}>
         You scored {score} out of {questions.length}
+        <button onClick={handleReset} className="reset-button">Reset Questions</button>
       </div>
     );
   }
@@ -56,7 +80,7 @@ function FillIn() {
 
   return (
     <div className="fillin-container">
-      <div className="fixed-score">Current Score: {score}</div>
+      <div className={`fixed-score ${performanceLevel}`}>Current Score: {score}</div>
       <div className="question-count">
         Question {currentQuestion + 1} of {questions.length}
       </div>
@@ -90,11 +114,6 @@ function FillIn() {
             Next
           </button>
         </div>
-      )}
-      {currentQuestion === questions.length - 1 && (
-        <button onClick={() => { saveScore(); window.location.reload(); }} className="reset-button">
-          Reset Questions
-        </button>
       )}
     </div>
   );
