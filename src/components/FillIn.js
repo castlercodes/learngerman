@@ -20,10 +20,10 @@ function FillIn() {
     index === self.findIndex((t) => t.english === v.english && t.german === v.german)
   );
 
-  const questions = shuffleArray(uniqueVocab).slice(0, 50); // Limit to 50 questions
+  // Initialize questions once using useState
+  const [questions] = useState(() => shuffleArray(uniqueVocab).slice(0, 50));
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleCheckAnswer = () => {
     setShowAnswer(true);
     if (userAnswer.trim().toLowerCase() === questions[currentQuestion].german.toLowerCase()) {
       setScore(score + 1);
@@ -59,7 +59,7 @@ function FillIn() {
       <div className="question-text">
         What is the German word for "<strong>{current.english}</strong>"?
       </div>
-      <form onSubmit={handleSubmit}>
+      <div className="input-section">
         <input
           type="text"
           value={userAnswer}
@@ -69,10 +69,10 @@ function FillIn() {
           placeholder="Type the German word here"
           required
         />
-        <button type="submit" className="submit-button" disabled={showAnswer}>
+        <button onClick={handleCheckAnswer} className="submit-button" disabled={showAnswer}>
           Submit
         </button>
-      </form>
+      </div>
       {showAnswer && (
         <div className="answer-section">
           {userAnswer.trim().toLowerCase() === current.german.toLowerCase() ? (
