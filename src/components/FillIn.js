@@ -20,7 +20,6 @@ function FillIn() {
 
   useEffect(() => {
     initializeQuestions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const initializeQuestions = () => {
@@ -30,7 +29,6 @@ function FillIn() {
 
     const storedCorrectCounts = JSON.parse(localStorage.getItem('fillinCorrectCounts')) || {};
 
-    // Filter out questions already answered correctly five times
     const filteredVocab = uniqueVocab.filter((q) => {
       const key = `${q.english}-${q.german}`;
       return !(storedCorrectCounts[key] && storedCorrectCounts[key] >= 5);
@@ -46,7 +44,6 @@ function FillIn() {
     setScore(0);
     setCompleted(false);
 
-    // Assign initial weights
     const initialWeight = preparedQuestions.length > 0 ? TOTAL_SCORE / preparedQuestions.length : 0;
     const weights = {};
     preparedQuestions.forEach((q) => {
@@ -54,6 +51,11 @@ function FillIn() {
       weights[key] = initialWeight;
     });
     setQuestionWeights(weights);
+  };
+
+  const resetCounts = () => {
+    localStorage.setItem('fillinCorrectCounts', JSON.stringify({}));
+    initializeQuestions();
   };
 
   const handleCheckAnswer = () => {
@@ -68,7 +70,6 @@ function FillIn() {
       updateCorrectCount(key, -1);
     }
 
-    // Check if all questions have been answered
     if (currentQuestion + 1 >= activeQuestions.length) {
       determinePerformanceLevel();
     }
@@ -80,10 +81,8 @@ function FillIn() {
     const newCount = currentCount + delta;
 
     if (newCount >= 5) {
-      // Remove question from activeQuestions
       const updatedActive = activeQuestions.filter(q => `${q.english}-${q.german}` !== key);
       setActiveQuestions(updatedActive);
-      // Recalculate weights
       const remaining = updatedActive.length;
       if (remaining > 0) {
         const newWeight = TOTAL_SCORE / remaining;
@@ -94,7 +93,7 @@ function FillIn() {
         });
         setQuestionWeights(updatedWeights);
       } else {
-        setScore(TOTAL_SCORE); // If all questions are answered correctly
+        setScore(TOTAL_SCORE);
         setCompleted(true);
       }
     } else if (newCount < 0) {
@@ -144,7 +143,6 @@ function FillIn() {
   };
 
   if (activeQuestions.length === 0 && !completed) {
-    // All questions mastered
     return (
       <div className={`score-section ${performanceLevel}`}>
         <h2>Congratulations!</h2>
@@ -170,6 +168,7 @@ function FillIn() {
 
   return (
     <div className="fillin-container">
+      <button onClick={resetCounts} className="reset-counts-button">Reset All Counts</button>
       <div className={`fixed-score ${performanceLevel}`}>Current Score: {score.toFixed(2)} / {TOTAL_SCORE}</div>
       <div className="question-count">
         Question {currentQuestion + 1} of {activeQuestions.length}

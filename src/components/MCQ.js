@@ -14,6 +14,7 @@ function MCQ() {
   const [score, setScore] = useState(0);
   const [performanceLevel, setPerformanceLevel] = useState('');
   const [questionWeights, setQuestionWeights] = useState({});
+  const [markedQuestions, setMarkedQuestions] = useState(new Set());
 
   useEffect(() => {
     initializeQuestions();
@@ -26,9 +27,10 @@ function MCQ() {
 
     const storedCorrectCounts = JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
 
+    // Filter out questions that have been answered correctly twice and are not marked
     const filteredVocab = uniqueVocab.filter((q) => {
       const key = `${q.english}-${q.german}`;
-      return !(storedCorrectCounts[key] && storedCorrectCounts[key] >= 2);
+      return markedQuestions.has(key) || !(storedCorrectCounts[key] && storedCorrectCounts[key] >= 2);
     });
 
     const preparedQuestions = shuffleArray(filteredVocab).map((q) => {
@@ -56,9 +58,16 @@ function MCQ() {
     setQuestionWeights(weights);
   };
 
-  const resetCounts = () => {
-    localStorage.setItem('mcqCorrectCounts', JSON.stringify({}));
-    initializeQuestions();
+  const toggleMarkQuestion = (key) => {
+    setMarkedQuestions((prevMarked) => {
+      const updatedMarked = new Set(prevMarked);
+      if (updatedMarked.has(key)) {
+        updatedMarked.delete(key);
+      } else {
+        updatedMarked.add(key);
+      }
+      return updatedMarked;
+    });
   };
 
   const handleOptionClick = (questionIndex, selectedOption) => {
@@ -84,13 +93,9 @@ function MCQ() {
     const storedCorrectCounts = JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
     const currentCount = storedCorrectCounts[key] || 0;
 
-    if(delta === -1){
-      delta = -currentCount;
-    }
+    const newCount = delta === -1 ? 0 : currentCount + delta;
 
-    const newCount = currentCount + delta;
-
-    if (newCount >= 2) {
+    if (newCount >= 2 && !markedQuestions.has(key)) {
       const updatedActive = activeQuestions.filter(q => `${q.english}-${q.german}` !== key);
       setActiveQuestions(updatedActive);
       const remaining = updatedActive.length;
@@ -105,8 +110,6 @@ function MCQ() {
       } else {
         setScore(TOTAL_SCORE);
       }
-    } else if (newCount < 0) {
-      storedCorrectCounts[key] = 0;
     } else {
       storedCorrectCounts[key] = newCount;
     }
@@ -143,8 +146,6 @@ function MCQ() {
 
   return (
     <div className="mcq-container">
-      <button onClick={resetCounts} className="reset-counts-button">Reset All Counts</button>
-      <button onClick={handleReset} className="reset-button">Reset Questions</button>
       <div className={`fixed-score ${performanceLevel}`}>Current Score: {score.toFixed(2)} / {TOTAL_SCORE}</div>
       
       <div className="questions-list">
@@ -152,6 +153,7 @@ function MCQ() {
           <div className="all-mastered">
             <h2>Congratulations!</h2>
             <p>You have mastered all the questions.</p>
+            <button onClick={handleReset} className="reset-button">Reset Questions</button>
           </div>
         ) : (
           activeQuestions.map((q, index) => {
@@ -161,6 +163,13 @@ function MCQ() {
                 <div className="question-text">
                   <strong>{index + 1}.</strong> What is the German word for "<em>{q.english}</em>"?
                 </div>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={markedQuestions.has(key)}
+                    onChange={() => toggleMarkQuestion(key)}
+                  /> Mark to Practice
+                </label>
                 <div className="options">
                   {q.options.map((option, idx) => (
                     <button
