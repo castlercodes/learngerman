@@ -7,7 +7,7 @@ function shuffleArray(array) {
 }
 
 function FillIn() {
-  const TOTAL_SCORE = 88;
+  const TOTAL_SCORE = vocab.length;
 
   const [allQuestions, setAllQuestions] = useState([]);
   const [activeQuestions, setActiveQuestions] = useState([]);
