@@ -3,11 +3,12 @@ import vocab from '../data/vocab';
 import './MCQ.css';
 
 function shuffleArray(array) {
-  return array.sort(() => Math.random() - 0.5);
+  return [...array].sort(() => Math.random() - 0.5);
 }
 
 function MCQ() {
-  const TOTAL_SCORE = 88;
+  const TOTAL_SCORE = vocab.length;
+
   const [allQuestions, setAllQuestions] = useState([]);
   const [activeQuestions, setActiveQuestions] = useState([]);
   const [results, setResults] = useState({});
@@ -22,25 +23,36 @@ function MCQ() {
   }, []);
 
   const initializeQuestions = () => {
-    let uniqueVocab = vocab.filter((v, index, self) =>
-      index === self.findIndex((t) => t.english === v.english && t.german === v.german)
+    let uniqueVocab = vocab.filter(
+      (v, index, self) =>
+        index ===
+        self.findIndex((t) => t.english === v.english && t.german === v.german)
     );
 
     const storedQuestions = JSON.parse(localStorage.getItem('mcqQuestionOrder'));
-    uniqueVocab = storedQuestions || shuffleArray(uniqueVocab);
+    if (storedQuestions) {
+      uniqueVocab = storedQuestions;
+    } else {
+      uniqueVocab = shuffleArray(uniqueVocab);
+      localStorage.setItem('mcqQuestionOrder', JSON.stringify(uniqueVocab));
+    }
 
-    const storedCorrectCounts = JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
-    const storedMarkedQuestions = JSON.parse(localStorage.getItem('mcqMarkedQuestions')) || [];
-    setMarkedQuestions(new Set(storedMarkedQuestions));
+    const storedCorrectCounts =
+      JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
 
     const filteredVocab = uniqueVocab.filter((q) => {
       const key = `${q.english}-${q.german}`;
-      return markedQuestions.has(key) || !(storedCorrectCounts[key] && storedCorrectCounts[key] >= 2);
+      return (
+        markedQuestions.has(key) ||
+        !(storedCorrectCounts[key] && storedCorrectCounts[key] >= 2)
+      );
     });
 
     const preparedQuestions = filteredVocab.map((q) => {
       let options = [q.german];
-      const shuffledVocab = shuffleArray(uniqueVocab.filter(v => v.german !== q.german));
+      const shuffledVocab = shuffleArray(
+        uniqueVocab.filter((v) => v.german !== q.german)
+      );
       for (let i = 0; i < Math.min(4, shuffledVocab.length); i++) {
         options.push(shuffledVocab[i].german);
       }
@@ -53,7 +65,8 @@ function MCQ() {
     setScore(0);
     setPerformanceLevel('');
 
-    const initialWeight = preparedQuestions.length > 0 ? TOTAL_SCORE / preparedQuestions.length : 0;
+    const initialWeight =
+      preparedQuestions.length > 0 ? TOTAL_SCORE / preparedQuestions.length : 0;
     const weights = {};
     preparedQuestions.forEach((q) => {
       const key = `${q.english}-${q.german}`;
@@ -63,7 +76,8 @@ function MCQ() {
   };
 
   const loadStateFromStorage = () => {
-    const storedMarkedQuestions = JSON.parse(localStorage.getItem('mcqMarkedQuestions')) || [];
+    const storedMarkedQuestions =
+      JSON.parse(localStorage.getItem('mcqMarkedQuestions')) || [];
     setMarkedQuestions(new Set(storedMarkedQuestions));
 
     const storedResults = JSON.parse(localStorage.getItem('mcqResults')) || {};
@@ -74,10 +88,14 @@ function MCQ() {
   };
 
   const resetCounts = () => {
-    localStorage.clear();
+    localStorage.removeItem('mcqCorrectCounts');
+    localStorage.removeItem('mcqQuestionOrder');
+    localStorage.removeItem('mcqResults');
+    localStorage.removeItem('mcqMarkedQuestions');
+    localStorage.removeItem('totalscore');
+
     setMarkedQuestions(new Set());
     setResults({});
-    setScore(0);
     initializeQuestions();
   };
 
@@ -97,7 +115,7 @@ function MCQ() {
   const handleOptionClick = (questionIndex, selectedOption) => {
     const question = activeQuestions[questionIndex];
     const key = `${question.english}-${question.german}`;
-    if (results.hasOwnProperty(key)) return;
+    if (results[key] !== undefined) return;
 
     const isCorrect = selectedOption === question.german;
     setResults((prev) => {
@@ -105,6 +123,7 @@ function MCQ() {
       localStorage.setItem('mcqResults', JSON.stringify(updatedResults));
       return updatedResults;
     });
+
     if (isCorrect) {
       const newScore = score + questionWeights[key];
       setScore(newScore);
@@ -120,21 +139,24 @@ function MCQ() {
   };
 
   const updateCorrectCount = (key, delta) => {
-    const storedCorrectCounts = JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
+    const storedCorrectCounts =
+      JSON.parse(localStorage.getItem('mcqCorrectCounts')) || {};
     const currentCount = storedCorrectCounts[key] || 0;
 
     const newCount = delta === -1 ? 0 : currentCount + delta;
     storedCorrectCounts[key] = newCount;
 
     if (newCount >= 2 && !markedQuestions.has(key)) {
-      const updatedActiveQuestions = activeQuestions.filter(q => `${q.english}-${q.german}` !== key);
+      const updatedActiveQuestions = activeQuestions.filter(
+        (q) => `${q.english}-${q.german}` !== key
+      );
       setActiveQuestions(updatedActiveQuestions);
 
       const remaining = updatedActiveQuestions.length;
       if (remaining > 0) {
         const newWeight = TOTAL_SCORE / remaining;
         const updatedWeights = {};
-        updatedActiveQuestions.forEach(q => {
+        updatedActiveQuestions.forEach((q) => {
           const qKey = `${q.english}-${q.german}`;
           updatedWeights[qKey] = newWeight;
         });
@@ -151,7 +173,10 @@ function MCQ() {
     const previousScores = JSON.parse(localStorage.getItem('mcqScores')) || [];
     const maxScore = Math.max(...previousScores, score);
     const minScore = Math.min(...previousScores, score);
-    const avgScore = previousScores.length > 0 ? previousScores.reduce((a, b) => a + b, 0) / previousScores.length : 0;
+    const avgScore =
+      previousScores.length > 0
+        ? previousScores.reduce((a, b) => a + b, 0) / previousScores.length
+        : 0;
 
     if (score > maxScore) {
       setPerformanceLevel('new-high');
@@ -171,17 +196,26 @@ function MCQ() {
   };
 
   const handleReset = () => {
-    localStorage.clear();
+    localStorage.removeItem('mcqQuestionOrder');
+    localStorage.removeItem('mcqResults');
+    localStorage.removeItem('totalscore');
+
     setResults({});
     initializeQuestions();
   };
 
   return (
     <div className="mcq-container">
-      <button onClick={resetCounts} className="reset-counts-button">Reset All Counts</button>
-      <button onClick={handleReset} className="reset-button">Reset Questions</button>
-      <div className={`fixed-score ${performanceLevel}`}>Current Score: {score.toFixed(2)} / {TOTAL_SCORE}</div>
-      
+      <button onClick={resetCounts} className="reset-counts-button">
+        Reset All Counts
+      </button>
+      <button onClick={handleReset} className="reset-button">
+        Reset Questions
+      </button>
+      <div className={`fixed-score ${performanceLevel}`}>
+        Current Score: {score.toFixed(2)} / {TOTAL_SCORE}
+      </div>
+
       <div className="questions-list">
         {activeQuestions.length === 0 ? (
           <div className="all-mastered">
@@ -194,7 +228,8 @@ function MCQ() {
             return (
               <div key={key} className="question-card">
                 <div className="question-text">
-                  <strong>{index + 1}.</strong> What is the German word for "<em>{q.english}</em>"?
+                  <strong>{index + 1}.</strong> What is the German word for "
+                  <em>{q.english}</em>"?
                 </div>
                 <div className="mark-to-practice-section">
                   <label className="mark-to-practice-container">
@@ -204,7 +239,9 @@ function MCQ() {
                       checked={markedQuestions.has(key)}
                       onChange={() => toggleMarkQuestion(key)}
                     />
-                    <span className="mark-to-practice-label">Mark to Practice</span>
+                    <span className="mark-to-practice-label">
+                      Mark to Practice
+                    </span>
                   </label>
                 </div>
                 <div className="options">
@@ -214,8 +251,8 @@ function MCQ() {
                       className={`option-button ${
                         results[key] !== undefined
                           ? option === q.german
-                          ? 'correct'
-                          : 'incorrect'
+                            ? 'correct'
+                            : 'incorrect'
                           : ''
                       }`}
                       onClick={() => handleOptionClick(index, option)}
@@ -226,8 +263,14 @@ function MCQ() {
                   ))}
                 </div>
                 {results[key] !== undefined && (
-                  <div className={`feedback ${results[key] ? 'correct' : 'incorrect'}`}>
-                    {results[key] ? 'Correct!' : `Wrong! Correct answer: ${q.german}`}
+                  <div
+                    className={`feedback ${
+                      results[key] ? 'correct' : 'incorrect'
+                    }`}
+                  >
+                    {results[key]
+                      ? 'Correct!'
+                      : `Incorrect! The correct answer is "${q.german}"`}
                   </div>
                 )}
               </div>

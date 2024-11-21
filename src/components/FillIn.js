@@ -8,6 +8,7 @@ function shuffleArray(array) {
 
 function FillIn() {
   const TOTAL_SCORE = 88;
+
   const [allQuestions, setAllQuestions] = useState([]);
   const [activeQuestions, setActiveQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -19,7 +20,13 @@ function FillIn() {
   const [questionWeights, setQuestionWeights] = useState({});
 
   useEffect(() => {
-    initializeQuestions();
+    // Load persisted state from localStorage
+    const savedState = JSON.parse(localStorage.getItem('fillinState'));
+    if (savedState) {
+      restoreState(savedState);
+    } else {
+      initializeQuestions();
+    }
   }, []);
 
   const initializeQuestions = () => {
@@ -51,10 +58,49 @@ function FillIn() {
       weights[key] = initialWeight;
     });
     setQuestionWeights(weights);
+
+    saveState(preparedQuestions, 0, 0, false);
+  };
+
+  const restoreState = (savedState) => {
+    setAllQuestions(savedState.allQuestions);
+    setActiveQuestions(savedState.activeQuestions);
+    setCurrentQuestion(savedState.currentQuestion);
+    setUserAnswer(savedState.userAnswer);
+    setShowAnswer(savedState.showAnswer);
+    setScore(savedState.score);
+    setCompleted(savedState.completed);
+    setPerformanceLevel(savedState.performanceLevel);
+    setQuestionWeights(savedState.questionWeights);
+  };
+
+  const saveState = (
+    activeQuestions,
+    currentQuestion,
+    score,
+    completed,
+    userAnswer = '',
+    showAnswer = false,
+    performanceLevel = '',
+    questionWeights = {}
+  ) => {
+    const state = {
+      allQuestions,
+      activeQuestions,
+      currentQuestion,
+      userAnswer,
+      showAnswer,
+      score,
+      completed,
+      performanceLevel,
+      questionWeights,
+    };
+    localStorage.setItem('fillinState', JSON.stringify(state));
   };
 
   const resetCounts = () => {
     localStorage.setItem('fillinCorrectCounts', JSON.stringify({}));
+    localStorage.removeItem('fillinState');
     initializeQuestions();
   };
 
@@ -73,6 +119,8 @@ function FillIn() {
     if (currentQuestion + 1 >= activeQuestions.length) {
       determinePerformanceLevel();
     }
+
+    saveState(activeQuestions, currentQuestion, score, completed, userAnswer, true, performanceLevel, questionWeights);
   };
 
   const updateCorrectCount = (key, delta) => {
@@ -102,6 +150,7 @@ function FillIn() {
       storedCorrectCounts[key] = newCount;
     }
     localStorage.setItem('fillinCorrectCounts', JSON.stringify(storedCorrectCounts));
+    saveState(activeQuestions, currentQuestion, score, completed, userAnswer, showAnswer, performanceLevel, questionWeights);
   };
 
   const determinePerformanceLevel = () => {
@@ -135,6 +184,7 @@ function FillIn() {
     } else {
       setCompleted(true);
     }
+    saveState(activeQuestions, currentQuestion + 1, score, completed, '', false, performanceLevel, questionWeights);
   };
 
   const handleReset = () => {
@@ -164,7 +214,6 @@ function FillIn() {
   }
 
   const current = activeQuestions[currentQuestion];
-  const keyId = `${current.english}-${current.german}`;
 
   return (
     <div className="fillin-container">
@@ -198,11 +247,11 @@ function FillIn() {
             <span className="correct">Correct!</span>
           ) : (
             <span className="incorrect">
-              Incorrect! The correct answer is <strong>{current.german}</strong>.
+              Incorrect! The correct answer is <strong>{current.german}</strong>
             </span>
           )}
           <button onClick={handleNext} className="next-button">
-            Next
+            Next Question
           </button>
         </div>
       )}

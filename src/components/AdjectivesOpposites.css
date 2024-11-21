@@ -1,0 +1,231 @@
+/* Container for the whole quiz */
+.adjective-opposites-container {
+  width: 90%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: black;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header style */
+.adjective-opposites-header {
+  text-align: center;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Item for each question */
+.adjective-opposites-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+/* Input styling */
+input[type="text"] {
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 16px;
+  border: 1px solid black;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Submit icon button */
+.submit-icon {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  margin-top: 10px;
+  align-self: flex-start; /* Aligns it to the left of the input */
+  color: #4CAF50;
+  transition: color 0.3s ease;
+}
+
+.submit-icon:hover {
+  color: #388E3C;
+}
+
+/* Feedback styles */
+.feedback {
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+.feedback.correct {
+  color: green;
+}
+
+.feedback {
+  color: red;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+  .adjective-opposites-header {
+    font-size: 20px;
+  }
+
+  .adjective-opposites-item {
+    margin-bottom: 15px;
+  }
+
+  input[type="text"] {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .submit-icon {
+    font-size: 20px;
+    margin-top: 8px;
+  }
+
+  .feedback {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .adjective-opposites-container {
+    padding: 15px;
+  }
+
+  .adjective-opposites-header {
+    font-size: 18px;
+  }
+
+  .adjective-opposites-item {
+    margin-bottom: 10px;
+  }
+
+  input[type="text"] {
+    font-size: 13px;
+    padding: 7px;
+  }
+
+  .submit-icon {
+    font-size: 18px;
+  }
+}
+/* Container for the whole quiz */
+.adjective-opposites-container {
+    width: 90%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: black;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header style */
+  .adjective-opposites-header {
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  /* Item for each question */
+  .adjective-opposites-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+  
+  /* Input styling */
+  input[type="text"] {
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Submit icon button */
+  .submit-icon {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    margin-top: 10px;
+    align-self: flex-start; /* Aligns it to the left of the input */
+    color: #4CAF50;
+    transition: color 0.3s ease;
+  }
+  
+  .submit-icon:hover {
+    color: #388E3C;
+  }
+  
+  /* Feedback styles */
+  .feedback {
+    margin-top: 5px;
+    font-size: 14px;
+  }
+  
+  .feedback.correct {
+    color: green;
+  }
+  
+  .feedback {
+    color: red;
+  }
+  
+  /* Media Queries for Responsiveness */
+  @media (max-width: 768px) {
+    .adjective-opposites-header {
+      font-size: 20px;
+    }
+  
+    .adjective-opposites-item {
+      margin-bottom: 15px;
+    }
+  
+    input[type="text"] {
+      font-size: 14px;
+      padding: 8px;
+    }
+  
+    .submit-icon {
+      font-size: 20px;
+      margin-top: 8px;
+    }
+  
+    .feedback {
+      font-size: 12px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .adjective-opposites-container {
+      padding: 15px;
+    }
+  
+    .adjective-opposites-header {
+      font-size: 18px;
+    }
+  
+    .adjective-opposites-item {
+      margin-bottom: 10px;
+    }
+  
+    input[type="text"] {
+      font-size: 13px;
+      padding: 7px;
+    }
+  
+    .submit-icon {
+      font-size: 18px;
+    }
+  }
+  
