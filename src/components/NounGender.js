@@ -1,5 +1,7 @@
+// src/components/NounGender.js
+
 import React, { useState, useEffect } from 'react';
-import vocab from '../data/vocab'; // Assuming vocab is an array of words with 'german', 'english', 'gender' fields
+import vocab from '../data/vocab'; // Ensure vocab is updated as per previous instructions
 import './NounGender.css';
 
 // Function to shuffle options randomly
@@ -18,16 +20,56 @@ function NounGender() {
     initializeQuestions();
   }, []);
 
+  // Function to parse the gender field into an array of correct answers
+  const parseGender = (genderStr) => {
+    if (!genderStr || genderStr.toLowerCase() === 'nan') return [];
+
+    // Split by '/' to handle multiple genders like 'der / das' or 'der/die'
+    const parts = genderStr.split('/').map(part => part.trim());
+
+    // Further split by spaces to handle annotations like '(plural)'
+    const genders = [];
+    parts.forEach(part => {
+      if (part.includes('(plural)')) {
+        genders.push('die (plural)');
+      } else {
+        genders.push(part);
+      }
+    });
+
+    return genders;
+  };
+
   // Function to initialize the quiz questions
   const initializeQuestions = () => {
     const nounQuestions = vocab
       .filter((word) => word.gender && word.gender.toLowerCase() !== 'nan') // Exclude 'nan' as a string
-      .map((word) => ({
-        german: word.german,
-        english: word.english,
-        gender: word.gender,
-        options: shuffleArray(['der', 'die', 'das']), // Shuffle options
-      }));
+      .map((word) => {
+        const correctGenders = parseGender(word.gender);
+
+        // Determine options based on whether the noun is plural or has multiple genders
+        let options = ['der', 'die', 'das'];
+        if (correctGenders.includes('die (plural)')) {
+          options = ['der', 'die', 'das', 'die (plural)'];
+        }
+
+        // If multiple correct genders exist, ensure all are included in options
+        correctGenders.forEach(gender => {
+          if (!options.includes(gender)) {
+            options.push(gender);
+          }
+        });
+
+        // Shuffle options
+        options = shuffleArray(options);
+
+        return {
+          german: word.german,
+          english: word.english,
+          correctGenders, // Array of correct answers
+          options,
+        };
+      });
 
     setQuestions(nounQuestions);
     setTotalQuestions(nounQuestions.length);
@@ -38,7 +80,7 @@ function NounGender() {
   // Handle when an option is selected
   const handleOptionClick = (questionIndex, selectedOption) => {
     const currentQuestion = questions[questionIndex];
-    const isCorrect = selectedOption === currentQuestion.gender;
+    const isCorrect = currentQuestion.correctGenders.includes(selectedOption);
 
     // Update the results object with whether the answer is correct or incorrect
     setResults((prev) => ({
@@ -76,7 +118,7 @@ function NounGender() {
                   key={option}
                   className={`option-button ${
                     results[index] !== undefined
-                      ? option === question.gender
+                      ? question.correctGenders.includes(option)
                         ? 'correct'
                         : 'incorrect'
                       : ''
@@ -96,7 +138,9 @@ function NounGender() {
               >
                 {results[index]
                   ? 'Correct!'
-                  : `Incorrect! The correct answer is "${question.gender}".`}
+                  : `Incorrect! The correct answer${
+                      question.correctGenders.length > 1 ? 's are' : ' is'
+                    } "${question.correctGenders.join(', ')}".`}
               </div>
             )}
           </div>
