@@ -255,7 +255,7 @@ const vocab = [
 { english: "escalator", german: "Rolltreppe", gender: "die" },
 { english: "elevator", german: "Aufzug", gender: "der" },
 { english: "magazine", german: "Zeitschrift", gender: "die" },
-{ english: "newspaper", german: "Zeitung", gender: "die" }
+{ english: "newspaper", german: "Zeitung", gender: "die" },
 
 
   // Places
